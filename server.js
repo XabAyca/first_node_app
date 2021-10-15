@@ -18,21 +18,23 @@ app.use(
     resave: true
   })
 );
+app.use(require('./middlewares/flash'))
 
 //routes
 app.get('/', (request, response) => {
-  if (request.session.error) {
-    response.locals.error = request.session.error
-    request.session.error = undefined
-  }
   response.render('pages/index')
 })
 
 app.post('/', (request, response) => {
   if (request.body.message === undefined || request.body.message === '') {
-    request.session.error = 'Il y a une erreur'
-    response.redirect('/');
+    request.flash('error', "Vous n'avez pas posté de message")
+
+  } else {
+    Message.create(request.body.message, () => {
+      request.flash('success', "Merci =D !")
+    })
   }
-})
+  response.redirect("/");
+});
 
 app.listen(8080)
